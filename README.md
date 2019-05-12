@@ -10,7 +10,7 @@ I've also filed a request by the original author, so the future of this reposito
 
 Enjoy using **argbash**, it's a nice tool. The credit goes to the original author(s).
 
-**README** for the Docker image can be found [here](docker/README.md).
+**README** for the Docker image can be found **[here](https://github.com/accetto/argbash-docker/blob/master/docker/README.md)**.
 
 Content of the original **README** follows.
 
