@@ -1,0 +1,13 @@
+*
+!bin
+!doc
+!docker
+!resources
+!src
+!tests
+*.in
+*.md
+*.sh
+*.yml
+developer*
+scrap*

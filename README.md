@@ -1,3 +1,21 @@
+# argbash-docker
+
+**Remarks** from [accetto](https://github.com/accetto)
+
+The original [argbash](https://github.com/matejak/argbash) repository has been cloned because the Docker image [argbash](https://hub.docker.com/r/matejak/argbash/) on Docker Hub is currently out of date and it does not contain the latest fixes and improvements.
+
+I've made some minor changes in **Dockerfile** to make it ready for auto-build and I've built a fresh Docker image, containing the current improvements.
+
+I've also filed a request by the original author, so the future of this repository is currently uncertain. It can happen, that it will be removed someday.
+
+Enjoy using **argbash**, it's a nice tool. The credit goes to the original author(s).
+
+**README** for the Docker image can be found [here](docker/README.md).
+
+Content of the original **README** follows.
+
+****
+
 [argbash](https://argbash.io)
 =============================
 
