@@ -1,18 +1,30 @@
 # argbash-docker
 
-**Remarks** from [accetto](https://github.com/accetto)
+## Remarks from [accetto][accetto-github]
 
-The original [argbash](https://github.com/matejak/argbash) repository has been cloned because the Docker image [argbash](https://hub.docker.com/r/matejak/argbash/) on Docker Hub is currently out of date and it does not contain the latest fixes and improvements.
+The original [argbash][matejak-github-argbash] repository has been cloned because the original Docker image [argbash][matejak-dockerhub-argbash] on the Docker Hub is currently out of date and it does not contain the latest fixes and improvements.
 
-I've made some minor changes in **Dockerfile** to make it ready for auto-build and I've built a fresh Docker image, containing the current improvements.
+I've made some adjustments in the [Dockerfile][this-github-dockerfile] to make it ready for auto-build and I've built a fresh Docker image [accetto/argbash-docker][this-dockerhub] with the latest enhancements.
 
-I've also filed a request by the original author, so the future of this repository is currently uncertain. It can happen, that it will be removed someday.
+I've also added some helper [utilities][this-github-utils] that make using dockerized **argbash** more convenient. They are pretty straightforward and the help they provide should be sufficient. I may add some documentation for the utilities sometimes later.
 
 Enjoy using **argbash**, it's a nice tool. The credit goes to the original author(s).
 
-**README** for the Docker image can be found **[here](https://github.com/accetto/argbash-docker/blob/master/docker/README.md)**.
+The original **README** for the Docker image can be found [here][this-github-dockerfile-readme].
 
 Content of the original **README** follows.
+
+[accetto-github]: https://github.com/accetto
+
+[this-dockerhub]: https://hub.docker.com/r/accetto/argbash-docker
+[this-github]: https://github.com/accetto/argbash-docker
+
+[this-github-dockerfile]: https://github.com/accetto/argbash-docker/blob/master/docker/Dockerfile.in
+[this-github-dockerfile-readme]: https://github.com/accetto/argbash-docker/tree/master/docker
+[this-github-utils]: https://github.com/accetto/argbash-docker/tree/master/utils
+
+[matejak-github-argbash]: https://github.com/matejak/argbash
+[matejak-dockerhub-argbash]: https://hub.docker.com/r/matejak/argbash/
 
 ****
 
