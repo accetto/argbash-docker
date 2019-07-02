@@ -89,10 +89,35 @@ dnl $1: Name of the holding variable
 dnl Taken from: http://stackoverflow.com/a/246128/592892
 argbash_api([DEFINE_SCRIPT_DIR], [m4_do(
 	[[$0($@)]],
+	[dnl Taken from: http://stackoverflow.com/a/246128/592892
+],
+	[_DEFINE_SCRIPT_DIR([$1], [cd "$(dirname "${BASH_SOURCE[0]}")" && pwd])],
+)])
+
+
+dnl
+dnl Does the same as DEFINE_SCRIPT_DIR, but uses 'readlink -e' to follow symlinks.
+dnl Works only on GNU systems.
+dnl
+dnl $1: Name of the holding variable
+dnl Taken from: http://stackoverflow.com/a/246128/592892
+argbash_api([DEFINE_SCRIPT_DIR_GNU], [m4_do(
+	[[$0($@)]],
+	[dnl Taken from: http://stackoverflow.com/a/246128/592892
+],
+	[_DEFINE_SCRIPT_DIR([$1], [cd "$(dirname "$(readlink -e "${BASH_SOURCE[0]}")")" && pwd])],
+)])
+
+
+dnl
+dnl $1: Name of the holding variable
+dnl $2: Command to find the script dir
+m4_define([_DEFINE_SCRIPT_DIR], [m4_do(
+	[[$0($@)]],
 	[m4_define([SCRIPT_DIR_DEFINED])],
 	[m4_pushdef([_sciptdir], m4_ifnblank([$1], [[$1]], _DEFAULT_SCRIPTDIR))],
 	[m4_list_append([_OTHER],
-		m4_quote(_sciptdir[="$(cd "$(dirname "$(readlink -e "${BASH_SOURCE[0]}")")" && pwd)" || die "Couldn't determine the script's running directory, which probably matters, bailing out" 2]))],
+		m4_quote(_sciptdir[="$($2)" || die "Couldn't determine the script's running directory, which probably matters, bailing out" 2]))],
 	[m4_popdef([_sciptdir])],
 )])
 
@@ -222,6 +247,13 @@ m4_define([_MAKE_HELP_SYNOPSIS], [m4_do(
 )])
 
 
+dnl
+dnl $1: Argname
+dnl $2: Prelude
+m4_define([GET_SET_ARG_HELP_MESSAGE],
+	[[$2]m4_list_join(LIST_OF_VALUES_OF_ARGNAME([$1]), [, ], ', ', [ and ])])
+
+
 m4_define([_MAKE_HELP_FUNCTION_POSITIONAL_PART], [m4_lists_foreach_positional(
 	[_ARGS_LONG,_ARGS_CATH,_POSITIONALS_MINS,_POSITIONALS_DEFAULTS,_ARGS_HELP],
 	[argname0,_arg_type,_min_argn,_defaults,_msg], [m4_ifnblank(_msg, [m4_do(
@@ -229,12 +261,12 @@ m4_define([_MAKE_HELP_FUNCTION_POSITIONAL_PART], [m4_lists_foreach_positional(
 ],
 	[m4_pushdef([argname1], <m4_dquote(argname0)[[]m4_ifnblank(m4_quote($][1), m4_quote(-$][1))]>)],
 	[m4_pushdef([argname], m4_if(_arg_type, [inf], [m4_default(_INF_REPR, argname1)], [[argname1($][@)]]))],
+	[_IF_ARG_IS_OF_SET_TYPE(argname0, [m4_define([_msg], m4_dquote(_msg[]GET_SET_ARG_HELP_MESSAGE(argname0, [. Can be one of: ])))])],
 	[_INDENT_()[printf '\t%s\n' "]argname[: ]_SUBSTITUTE_LF_FOR_NEWLINE_WITH_DISPLAY_INDENT_AND_ESCAPE_DOUBLEQUOTES(_msg)],
 	[_POS_ARG_HELP_DEFAULTS([argname], _arg_type, _min_argn, _defaults)],
+	["_ENDL_()],
 	[m4_popdef([argname])],
 	[m4_popdef([argname1])],
-	["
-],
 )])])])
 
 
@@ -253,6 +285,7 @@ m4_define([_MAKE_PRINTF_OPTARG_HELP_STATEMENTS], [m4_do(
 			[_GET_VALUE_DESC([$1])])])])],
 	[m4_pushdef([_options], [$6([$1], [$2], [$3])])],
 	[m4_pushdef([_help_msg], [_SUBSTITUTE_LF_FOR_NEWLINE_WITH_DISPLAY_INDENT_AND_ESCAPE_DOUBLEQUOTES([$5])])],
+	[_IF_ARG_IS_OF_SET_TYPE([$1], [m4_pushdef([_help_msg], m4_quote(_help_msg[]GET_SET_ARG_HELP_MESSAGE([$1], [. Can be one of: ])))])],
 	[m4_case([$3],
 		[action],
 		[_INDENT_()[printf '\t%s\n'] "_options: _help_msg"],
@@ -266,6 +299,7 @@ m4_define([_MAKE_PRINTF_OPTARG_HELP_STATEMENTS], [m4_do(
 _INDENT_()[printf " '%s'" $4]
 _INDENT_()[printf '@:}@\n']])],
 		[_INDENT_()[printf '\t%s\n'] "_options: _help_msg[]m4_ifblank(_default, [[ (no default)]], [ ([default: ]'_default')])"])],
+	[_IF_ARG_IS_OF_SET_TYPE([$1], [m4_popdef([_help_msg])])],
 	[m4_popdef([_help_msg])],
 	[m4_popdef([_options])],
 	[m4_popdef([_type_spec])],
@@ -1269,7 +1303,7 @@ m4_define([_PASS_WHEN_GETOPT], [m4_ifnblank([$1], [m4_do(
 		[[[_next="${_key##-$1}"]],
 		[[if test -n "$_next" -a "$_next" != "$_key"]],
 		[[then]],
-		[_INDENT_()[begins_with_short_option "$_next" && shift && set -- "-$1" "-${_next}" "@S|@@" || die "The short option '$_key' can't be decomposed to ${_key:0:2} and -${_key:2}, because ${_key:0:2} doesn't accept value and '-${_key:2:1}' doesn't correspond to a short option."]],
+		[_INDENT_()[{ begins_with_short_option "$_next" && shift && set -- "-$1" "-${_next}" "@S|@@"; } || die "The short option '$_key' can't be decomposed to ${_key:0:2} and -${_key:2}, because ${_key:0:2} doesn't accept value and '-${_key:2:1}' doesn't correspond to a short option."]],
 		[[fi]]])],
 )])])
 

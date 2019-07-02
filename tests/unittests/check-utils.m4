@@ -1,7 +1,6 @@
-m4_include([list.m4])
 m4_include([utilities.m4])
-m4_include([function_generators.m4])
-m4_include([test-support.m4])
+m4_include_once([function_generators.m4])
+m4_include_once([test-support.m4])
 
 m4_list_append([FOO], [one])
 m4_list_append([FOO], [two])
@@ -120,9 +119,21 @@ assert_equals(UNDERLINE(,=,=), [
 assert_equals(UNDERLINE([a], [-]), [a
 -])
 
-assert_equals(SUBSTITUTE_LF_FOR_NEWLINE_WITH_INDENT_AND_ESCAPE_DOUBLEQUOTES([The Castle\n"Totenhammer"], [-]), [The Castle
+assert_equals(UNDERLINE([BOMB], [-]), [BOMB
+----])
+
+assert_equals(SUBSTITUTE_LF_FOR_NEWLINE_WITH_INDENT_AND_ESCAPE_DOUBLEQUOTES([BOMB Castle\n"Totenhammer"], [-]), [BOMB Castle
 -\"Totenhammer\"])
 
+
+assert_equals(_SUBSTITUTE_LF_FOR_NEWLINE_WITH_SPACE_INDENT_AND_ESCAPE_DOUBLEQUOTES([The Castle\n"Totenhammer"], [0]), [The Castle
+\"Totenhammer\"])
+
+assert_equals(_SUBSTITUTE_LF_FOR_NEWLINE_WITH_SPACE_INDENT_AND_ESCAPE_DOUBLEQUOTES([The Castle\n"Totenhammer"], [1]), [The Castle
+ \"Totenhammer\"])
+
+assert_equals(_SUBSTITUTE_LF_FOR_NEWLINE_WITH_SPACE_INDENT_AND_ESCAPE_DOUBLEQUOTES([The Castle\n"Totenhammer"], [2]), [The Castle
+  \"Totenhammer\"])
 
 assert_equals(UNDERLINE([Abc], [+], [=]), [===
 Abc

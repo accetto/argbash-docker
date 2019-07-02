@@ -1,10 +1,26 @@
+m4_include([argument_value_types.m4])
+m4_include([value_validators.m4])
+
+dnl
+dnl $1: Argname
+m4_define([_REPRESENT_VALUE_VERBOSE], [_IF_ARG_IS_OF_SET_TYPE([$1],
+	[m4_list_join(LIST_OF_VALUES_OF_ARGNAME([$1]), [|])],
+	[_CAPITALIZE([$1])])])
+
+
+dnl
+dnl $1: Argname
+m4_define([_REPRESENT_VALUE_SYNOPSIS], [m4_set_contains([TYPED_ARGS], [$1],
+	[m4_indir([$1_VAL_GROUP])],
+	[_CAPITALIZE([$1])])])
+
 
 m4_define([_SYNOPSIS_OF_OPTIONAL_ARGS], [m4_lists_foreach_optional([_ARGS_LONG,_ARGS_SHORT,_ARGS_CATH], [_argname,_arg_short,_arg_type], [m4_do(
 	[ @<:@],
 	[m4_case(_arg_type,
 		[bool], [_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS(_argname, )],
-		[arg], [_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS(_argname, , _CAPITALIZE(_argname))],
-		[repeated], [_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS(_argname, , _CAPITALIZE(_argname))],
+		[arg], [_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS(_argname, , _REPRESENT_VALUE_SYNOPSIS(_argname))],
+		[repeated], [_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS(_argname, , _REPRESENT_VALUE_SYNOPSIS(_argname))],
 		[_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS(_argname, )])],
 	[@:>@],
 	[m4_case(_arg_type,
@@ -19,8 +35,10 @@ dnl $2: Long + short
 dnl $3: Padding of $2
 dnl $4: Help (optional)
 dnl $5: Default (optional)
+dnl
+dnl 2 + 2 in the substitute function: 2 leading spaces + 2 spaces between options and text.
 m4_define([_FORMAT_DOCOPT_OPTION], [m4_do(
-	[m4_format([[  %-$3s]]m4_ifnblank([$4$5], [[[  %s]]])m4_ifnblank([$5], [[[ [default: %s]]]])._ENDL_(), [$2], [$4], [$5])],
+	[m4_format([[  %-$3s]]m4_ifnblank([$4$5], [[[  %s]]])m4_ifnblank([$5], [[[ [default: %s]]]])._ENDL_(), [$2], _SUBSTITUTE_LF_FOR_NEWLINE_WITH_SPACE_INDENT_AND_ESCAPE_DOUBLEQUOTES([$4], m4_eval([$3] + 2 + 2)), [$5])],
 )])
 
 
@@ -36,7 +54,7 @@ m4_define([APPEND_TO_LISTS_WITH_HELP_ELEMENTS], [m4_do(
 	[m4_list_append([_LIST_DOCOPT_OPTIONALS_SPECS], m4_case(_arg_type,
 		[bool], [_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS([$1], [$2], , [, ])],
 		[action], [_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS([$1], [$2], , [, ])],
-		[_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS([$1], [$2], _CAPITALIZE([$1]), [, ])]))],
+		[_FORMAT_OPTIONAL_ARGUMENT_FOR_HELP_SYNOPSIS([$1], [$2], _REPRESENT_VALUE_VERBOSE([$1]), [, ])]))],
 	[m4_list_append([_LIST_LOCAL_DEFAULTS], m4_case(_arg_type,
 		[bool], [[$4]],
 		[action], [],

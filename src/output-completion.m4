@@ -1,6 +1,6 @@
 dnl TODO: Basename determination: output filename, or input filename, or nothing.
-m4_include([argument_value_types.m4])
-m4_include([value_validators.m4])
+m4_include_once([argument_value_types.m4])
+m4_include_once([value_validators.m4])
 
 dnl Make somehow sure that the program name is translated to a valid shell function identifier
 m4_define([_TRANSLATE_BAD_CHARS], [m4_translit([[$1]], [-.], [__])])
@@ -106,14 +106,15 @@ m4_define([_OUTER_CASE_ELEMENTS], [m4_do(
 			)),
 		)],
 	)])],
-	[_JOIN_INDENTED(2,
-		[m4_list_join([OPTIONS_FOLLOWED_BY_SOME_VALUE], [|])[@:}@]],
-		_INDENT_MORE(m4_dquote_elt(
-			[COMPREPLY=( $(compgen -o bashdefault -o default -- "${cur}") )],
-			[return 0],
-			[;;],
-		)),
-	)],
+	[m4_list_ifempty([OPTIONS_FOLLOWED_BY_SOME_VALUE], ,
+		[_JOIN_INDENTED(2,
+			[m4_list_join([OPTIONS_FOLLOWED_BY_SOME_VALUE], [|])[@:}@]],
+			_INDENT_MORE(m4_dquote_elt(
+				[COMPREPLY=( $(compgen -o bashdefault -o default -- "${cur}") )],
+				[return 0],
+				[;;],
+			)),
+		)])],
 	[_JOIN_INDENTED(1,
 		[_INDENT_()[*@:}@]],
 	)],
