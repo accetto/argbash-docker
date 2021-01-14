@@ -73,7 +73,7 @@ dnl Checks that the an argument is a correct short option arg
 dnl $1: The short option "string"
 dnl $2: The argument name
 m4_define([_CHECK_SHORT_OPTION_NAME_IS_OK], [m4_ifnblank([$1], [m4_do(
-		[m4_bmatch([$1], [^[0-9a-zA-z]$], ,
+		[m4_bmatch([$1], [^[0-9a-zA-z?]$], ,
 			[_COLLECTOR_FEEDBACK([The value of short option '$1' for argument '--$2' is not valid - it has to be either left blank, or exactly one character.]m4_ifnblank([$1], [[ (Yours has ]m4_len([$1])[ characters).]]))])],
 		[m4_set_contains([_ARGS_SHORT], [$1],
 			[_COLLECTOR_FEEDBACK([The short option '$1' (in definition of '--$2') is already used.])],
@@ -202,12 +202,19 @@ argbash_api([ARG_OPTIONAL_SINGLE], _CHECK_PASSED_ARGS_COUNT(1, 4)[m4_do(
 
 dnl
 dnl $1 The function to call to get the version
-argbash_api([ARG_VERSION], _CHECK_PASSED_ARGS_COUNT(1)[m4_do(
+dnl $2: The version command's short option (optional)
+dnl $3: The version command's long option (optional)
+dnl $4: The version command's description (optional)
+argbash_api([ARG_VERSION], _CHECK_PASSED_ARGS_COUNT(1, 4)[m4_do(
 	[dnl Just record how have we called ourselves
 ],
 	[[$0($@)]],
 	[m4_bmatch(m4_expand([_W_FLAGS]), [V], ,
-		[_ARG_VERSION([$1])])],
+		[_ARG_VERSION([$1],
+			m4_default_quoted([$3], _VERSION_DEFAULT_ARGNAME),
+			_DEFAULT_IF_NARGS_GREATER_THAN([$#], 2, [$2], _VERSION_DEFAULT_SHORT_ARGNAME),
+			m4_default_quoted([$4], _VERSION_DEFAULT_HELP_MSG),
+	)])],
 )])
 
 
@@ -233,29 +240,41 @@ m4_define([_VERSION_PRINTF_ARGS], [m4_do(
 
 dnl
 dnl $1: The possibly blank additional message
+dnl $2: The version string
 m4_define([_VERSION_PRINTF_COMMAND],
-	[[printf] _VERSION_PRINTF_FORMAT([$1]) _VERSION_PRINTF_ARGS(m4_quote("INFERRED_BASENAME" "PROVIDED_VERSION_STRING"), [$1])])
+	[[printf] _VERSION_PRINTF_FORMAT([$1]) _VERSION_PRINTF_ARGS(m4_quote("INFERRED_BASENAME" "[$2]"), [$1])])
 
 
 dnl
 dnl Try to guess the program name
+dnl Defines PROVIDED_VERSION_STRING
 dnl $1 The version string.
 dnl $2 The version message (incl. quotes) to printf past the simple <program> <version> display. (optional), UNDOCUMENTED NON-FEATURE
+dnl $3: The version command's short option (optional)
+dnl $4: The version command's long option (optional)
+dnl $5: The version command's description (optional)
 argbash_api([ARG_VERSION_AUTO], _CHECK_PASSED_ARGS_COUNT(1)[m4_do(
 	[[$0($@)]],
 	[m4_define([PROVIDED_VERSION_STRING], [m4_expand([$1])])],
 	[m4_bmatch(m4_expand([_W_FLAGS]), [V], ,
-		[_ARG_VERSION(_VERSION_PRINTF_COMMAND([$2]))])],
+		[_ARG_VERSION(
+			_VERSION_PRINTF_COMMAND([$2], m4_expand([$1])),
+			m4_default_quoted([$4], _VERSION_DEFAULT_ARGNAME),
+			_DEFAULT_IF_NARGS_GREATER_THAN([$#], 3, [$3], _VERSION_DEFAULT_SHORT_ARGNAME),
+			m4_default_quoted([$5], _VERSION_DEFAULT_HELP_MSG),
+		)])],
 )])
 
 
+dnl $1 What to do when the version arg is specified
+dnl $2 Version long arg name
+dnl $3 Version short arg
+dnl $4 Version help message
 m4_define([_ARG_VERSION], [m4_do(
-	[dnl The function with underscore doesn't record what we have just recorded
-],
 	[_ARG_OPTIONAL_ACTION(
-		[version],
-		[v],
-		[Prints version],
+		[$2],
+		[$3],
+		[$4],
 		[$1],
 	)],
 )])
@@ -264,11 +283,19 @@ m4_define([_ARG_VERSION], [m4_do(
 dnl
 dnl $1: The main help message
 dnl $2: The bottom help message
-argbash_api([ARG_HELP], _CHECK_PASSED_ARGS_COUNT(1, 2)[m4_do(
+dnl $3: The help command's short option (optional)
+dnl $4: The help command's long option (optional)
+dnl $5: The help command's description (optional)
+argbash_api([ARG_HELP], _CHECK_PASSED_ARGS_COUNT(1, 5)[m4_do(
 	[dnl Skip help if we declare we don't want it
 ],
 	[[$0($@)]],
-	[_IF_W_FLAGS_DONT_CONTAIN([H], [_ARG_HELP([$1], [$2])])],
+	[_IF_W_FLAGS_DONT_CONTAIN(
+		[H], [_ARG_HELP([$1], [$2],
+		m4_default_quoted([$4], _HELP_DEFAULT_ARGNAME),
+		_DEFAULT_IF_NARGS_GREATER_THAN([$#], 3, [$3], _HELP_DEFAULT_SHORT_ARGNAME),
+		m4_default_quoted([$5], _HELP_DEFAULT_HELP_MSG),
+	)])],
 )])
 
 
@@ -279,9 +306,9 @@ m4_define([_ARG_HELP], [m4_do(
 	[m4_define([_HELP_MSG], [m4_escape([$1])])],
 	[m4_define([_HELP_MSG_EX], [m4_escape([$2])])],
 	[_ARG_OPTIONAL_ACTION(
-		[help],
-		[h],
-		[Prints help],
+		[$3],
+		[$4],
+		[$5],
 		[print_help],
 	)],
 )])

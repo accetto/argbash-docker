@@ -86,6 +86,8 @@ TESTS += \
 	test-wrapping-excl \
 	stability-wrapping \
 	test-infinity-minimal_call \
+	test-progs \
+	test-prog \
 	test-infinity \
 	test-infinity-nodefaults \
 	test-infinity-mixed \
@@ -155,6 +157,8 @@ SCRIPTS += \
 	$(TESTDIR)/test-wrapping-more.sh \
 	$(TESTDIR)/test-wrapping-excl.sh \
 	$(TESTDIR)/test-infinity-minimal_call.sh \
+	$(TESTDIR)/test-progs.sh \
+	$(TESTDIR)/test-prog.sh \
 	$(TESTDIR)/test-infinity.sh \
 	$(TESTDIR)/test-infinity-nodefaults.sh \
 	$(TESTDIR)/test-infinity-mixed.sh \
@@ -483,6 +487,23 @@ test-infinity-minimal_call: $(TESTDIR)/test-infinity-minimal_call.sh
 	$< 1 | grep -q 'POS_S=1,'
 	$< 1 2 "3 1 4" 4 5 | grep -q 'POS_S=1,2,3 1 4,4,5,'
 	test -z "$(SHELLCHECK)" || $(SHELLCHECK) "$(TESTDIR)/test-infinity-minimal_call.sh"
+test-progs: $(TESTDIR)/test-progs.sh
+	$< -h | grep MAKE | grep -q utility
+	$< -h | grep FULALA | grep -q BOOM
+	ERROR="fulala doesnt exist" $(REVERSE) $<
+	$< 2>&1 | grep fulala | grep -q exist
+	FULALA=make $<
+	ERROR="make doesnt work" MAKE=false FULALA=make $(REVERSE) $<
+	$< -h | grep fulala | grep -q FULALA
+	test -z "$(SHELLCHECK)" || $(SHELLCHECK) "$(TESTDIR)/test-progs.sh"
+test-prog: $(TESTDIR)/test-prog.sh
+	$< -h | grep FULALA | grep -q BOOM
+	ERROR="fulala doesnt exist" $(REVERSE) $<
+	$< 2>&1 | grep fulala | grep -q exist
+	FULALA=make $<
+	$< -h | grep fulala | grep -q FULALA
+	ERROR="fulala doesnt work" FULALA=false $(REVERSE) $<
+	test -z "$(SHELLCHECK)" || $(SHELLCHECK) "$(TESTDIR)/test-prog.sh"
 test-infinity: $(TESTDIR)/test-infinity.sh
 	$< | grep -q 'POS_S=first,second,third,'
 	$< 1 | grep -q 'POS_S=1,second,third,'
@@ -503,7 +524,7 @@ test-infinity-mixed: $(TESTDIR)/test-infinity-mixed.sh
 	$< 1 2 "3 1 4" 4 5 | grep -q 'POS_S=1,2,3 1 4,4,5,'
 	test -z "$(SHELLCHECK)" || $(SHELLCHECK) "$(TESTDIR)/test-infinity-mixed.sh"
 test-leftovers: $(TESTDIR)/test-leftovers.sh
-	$< -h | grep -q '\[-c|--cosi <arg>\] \[--(no-)fear\] \[-m|--more\] \[-h|--help\] <another> \.\.\. $$'
+	$< -? | grep -q '\[-c|--cosi <arg>\] \[--(no-)fear\] \[-m|--more\] \[-?|--hilfe\] <another> \.\.\. $$'
 	$< -c ours -m --more --more --no-fear "ours pos" left "o ver" | grep -q 'MORE=3,OPT_S=ours,FEAR=off,POS_S=ours pos,LEFTOVERS=left,o ver,'
 	test -z "$(SHELLCHECK)" || $(SHELLCHECK) "$(TESTDIR)/test-leftovers.sh"
 gen-test-infinity-dash: $(TESTDIR)/gen-test-infinity.m4 $(ARGBASH_BIN)
@@ -563,6 +584,7 @@ basic-docopt: $(TESTDIR)/basic.txt
 	grep -q "\[<pos-opt>\]" $<
 	grep -q "\[--opt_arg OPT_ARG\]" $<
 	grep -q "\s-o OPT_ARG, --opt_arg OPT_ARG\s" $<
+	! test -x $<
 
 test-onlyopt-docopt: $(TESTDIR)/test-onlyopt.txt
 	grep -q "\[--opt-repeated OPT-REPEATED\]\.\.\." $<

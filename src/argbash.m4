@@ -8,6 +8,7 @@
 # DEFINE_SCRIPT_DIR
 # ARG_POSITIONAL_SINGLE([input], [The input template file (pass '-' for stdin)])
 # ARG_OPTIONAL_SINGLE([output], o, [Name of the output file (pass '-' for stdout)], -)
+# ARG_OPTIONAL_BOOLEAN([in-place], [i], [Update a bash script in-place], [off])
 # ARG_OPTIONAL_SINGLE([type], t, [Output type to generate], [bash-script])
 # ARG_OPTIONAL_BOOLEAN([library],, [Whether the input file if the pure parsing library])
 # ARG_OPTIONAL_SINGLE([strip],, [Determines what to have in the output], [none])
@@ -190,6 +191,18 @@ get_parsing_code()
 	echo "$_newerfile"
 }
 
+
+# $1: The output file
+# $2: The output type string
+set_output_permission()
+{
+	if grep -q '\<script\>' <<< "$2"
+	then
+		chmod a+x "$1"
+	fi
+}
+
+
 # MS Windows compatibility fix
 discard=/dev/null
 test -e $discard || discard=NUL
@@ -202,6 +215,11 @@ trap cleanup EXIT
 # If we are reading from stdout, then create a temp file
 if test "$infile" = '-'
 then
+	if test "$_arg_in_place" = 'on'
+	then
+		echo "Cannot use stdin input with --in-place option!" >&2
+		exit 1;
+	fi
 	infile=temp_in_$$
 	_files_to_clean+=("$infile")
 	cat > "$infile"
@@ -221,6 +239,10 @@ then
 fi
 
 test -f "$infile" || _PRINT_HELP=yes die "argument '$infile' is supposed to be a file!" 1
+if test "$_arg_in_place" = on
+then
+	_arg_output="$infile"
+fi
 test -n "$_arg_output" || { echo "The output can't be blank - it is not a legal filename!" >&2; exit 1; }
 outfname="$_arg_output"
 autom4te --version > "$discard" 2>&1 || { echo "You need the 'autom4te' utility (it comes with 'autoconf'), if you have bash, that one is an easy one to get." 2>&1; exit 1; }
@@ -231,7 +253,7 @@ _wrapped_defns=""
 parsing_code="$(get_parsing_code)"
 # Just if the original was m4, we replace .m4 with .sh
 test -n "$parsing_code" && parsing_code_out="${parsing_code:0:-2}sh"
-test "$_arg_library" = off && test -n "$parsing_code" && ($0 --library "$parsing_code" -o "$parsing_code_out")
+test "$_arg_library" = off && test -n "$parsing_code" && ($0 --strip user-content "$parsing_code" -o "$parsing_code_out")
 
 # We may use some of the wrapping stuff, so let's fill the _wrapped_defns
 settle_wrapped_fname "$infile"
@@ -249,7 +271,7 @@ fi
 if test "$outfname" != '-'
 then
 	printf "%s\\n" "$output" > "$outfname"
-	chmod a+x "$outfname"
+	set_output_permission "$outfname" "$_arg_type"
 else
 	printf "%s\\n" "$output"
 fi

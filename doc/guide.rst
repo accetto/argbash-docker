@@ -243,23 +243,38 @@ Special arguments
 * Help argument (a special case of an optional action argument):
   ::
 
-     ARG_HELP([short program description (optional)], [long program description (optional)])
+     ARG_HELP([short program description (optional)], [long program description (optional)],
+         [short option (optional, "h" by default)], [long option (optional, "help" by default)], [option description (optional, "Prints help" by default)])
 
-  This will generate the ``--help`` and ``-h`` action arguments that will print the usage information.
+  By default, it will generate the ``--help`` and ``-h`` action arguments that will print the usage information.
+  You can use the last three arguments to override the default help argument handling.
+  If you wish to disable the short argument for the help, just leave it blank, and specify either the long argument, or the description.
   Notice that the usage information is generated even if this macro is not used --- we print it when we think that there is something wrong with arguments that were passed.
 
   The long program description is a string quoted in double quotation marks (so you may use environmental variables in it) and additionally, occurrences of ``\n`` will be translated to a line break with indentation (use ``\\n`` to have the actual ``\n`` in the help description).
   If you want to have environmental variables and newlines, you have to make sure that the env variable contains literal newlines/tabs --- you can either use the ``foo=$'broken\nline'`` `pattern <http://stackoverflow.com/a/3182519>`_, or you can use quotes to define the variable so it contains real literal newlines / tabs.
 
+  Example invocation:
+
+  ::
+
+     ARG_HELP([My app], [Parses arguments ...\n... perfectly.], [], [?])
+
 * Version argument (a special case of an action argument):
   ::
 
-     ARG_VERSION([code to execute when specified])
+     ARG_VERSION([code to execute when specified],
+         [short option (optional, "v" by default)], [long option (optional, "version" by default)], [option description (optional, "Prints version" by default)])
+
+  By default, it will generate the ``--version`` and ``-v`` action arguments that will print the version information.
+  You can use the last three arguments to override the default version argument handling.
+  If you wish to disable the short argument for the version, just leave it blank, and specify either the long argument, or the description.
 
 * Enhanced version argument (a special case of an action argument):
   ::
 
-     ARG_VERSION_AUTO([version number or macro containing it])
+     ARG_VERSION_AUTO([version number or macro containing it], [additional version message (optional)],
+         [short option (optional, "v" by default)], [long option (optional, "version" by default)], [option description (optional, "Prints version" by default)])
 
   The macro will take it's first argument, expands it, and treats it as a version number.
   This allows you to use a quoted macro containing the version number as the first argument.
@@ -267,7 +282,7 @@ Special arguments
 
   If the ``ARG_HELP([MSG], ...)`` macro has been used before, it also outputs the ``MSG`` below the program name --- version pair.
 
-  For example, for argbashm, it yields
+  For example, for argbash, it yields
 
   .. literalinclude:: _static/argbash-version.txt
      :language: text
@@ -379,7 +394,8 @@ You have these possibilities:
      test "$_arg_stop_with_index" -gt "$_arg_start_with_index" \
         || die "The last operation has to be a successor of the first one, which is not the case."
 
-* Filenames
+..
+ * Filenames (not implemented yet)
 
   ::
 
@@ -442,6 +458,14 @@ Plus, there are convenience macros:
   .. warning::
     This command is available only on GNU systems, so be very careful with its usage --- it won't work for OSX users, and for users on non-GNU based Linux distributions (s.a. Alpine Linux).
     Don't use it unless you need the functionality AND you are sure that the script will be used only on systems with GNU coreutils.
+
+* Add a function that you can use to source modules relative to the script's location
+  ::
+
+     DEFINE_LOAD_LIBRARY([loader function name (optional, default is load_lib_relativepath)])
+
+  Defines a function (``load_lib_relativepath`` by default) that takes a path relative to the script's directory as an input, and attempts to source a file at that path.
+  In case of failure, ``die`` is called, displays an error message, and quits the program.
 
 .. _parsing_code:
 
@@ -550,21 +574,18 @@ Plus, there are convenience macros:
 
   ::
 
-    ARG_USE_PROG([variable name], [default if empty (optional)], [help message (optional)], [args (optional)])
+    ARG_USE_PROGRAM([program name], [env variable name (optional)], [message if not found (optional)], [help message (optional)])
 
-  For instance, if you declare ``ARG_USE_PROG([PYTHON], [python], [The preferred Python executable])`` in your script, you can use constructs s.a. ``"$PYTHON" script.py`` later.
-  This macro operates in two modes:
+  For instance, if you use ``ARG_USE_PROGRAM([python], [PYTHON], [], [The preferred Python interpreter])`` in your script, you can use constructs s.a. ``"$PYTHON" script.py`` later in the script body.
 
-  * ``args`` are not given:
-    The program name is searched for using the ``which`` utility and if it isn't a executable, the script will terminate with an error.
-    ``ARG_USE_PROG([PYTHON], [python], ,)``
-  * ``args`` are given:
-    The program is called with ``args`` and if the return code is non-zero, the script will terminate with an error.
-    If you want to call the program with no arguments, leave the last argument blank --- the following usage is 100% legal: ``ARG_USE_PROG([PYTHON], [python], ,)`` and it means "accept ``PYTHON`` with default value ``python``, but don't bother with help message and pass no arguments when evaluating whether a program is valid".
+  Remarks:
 
-    Notice that this approach is wrong, calling ``python`` without arguments won't work (since it starts the interactive Python interpreter) and you should use ``ARG_USE_PROG([PYTHON], [python], , [--version])`` instead.
-
-  In either case, the value of ``"$PYTHON"`` will be either ``python`` (if the user doesn't override it), or it can be whatever else what the caller sets.
+  * If the environment variable is not given, it defaults to the transliteration of the command.
+    Lowercase characters are converted to uppercase, the dashes are converted to underscore.
+  * If the script is called with the environment variable defined, then no checking will be done ---
+    the variable contents are trusted, and passed on.
+  * If the environment variable is empty, the program will be given to ``command -v`` as an argument.
+    If that doesn't succeed, a default or provided message will be displayed, and the script will terminate.
 
 * Declare every variable related to every positional argument:
 

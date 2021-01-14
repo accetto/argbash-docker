@@ -1,3 +1,39 @@
+2.10.1 (TBA)
+-------------------
+
+
+2.10.0 (2020-09-22)
+-------------------
+
+Buxfixes:
+
+* `argbash-init` is able to handle empty string as the only argument without being puzzled (#130).
+* Error handling of script working directory detection now more robust (#134).
+
+New features:
+
+* Argbash in the container has no longer the terminal output limitation caused by the crlf line ending (#129). Thanks to Felipe Santos (@felipecrs)!.
+* The `ARG_USE_PROG` implementation was missing. Therefore, it was implemented as `ARG_USE_PROGRAM` using a slightly different interface.
+
+
+2.9.0 (2020-08-01)
+------------------
+
+Buxfixes:
+
+* Fixed typo in `argbash-init` and updated obsolete/incaccurate hints (#97).
+* Fixed incorrect permission of non-script output files (#104).
+* Increased MacOS compatibility by removing terminator from the `chmod` invocation (#107).
+
+New features:
+
+* Increased flexibility of the help option (#92).
+* Improved `argbash-init` script template (#85).
+* Increased flexibility of the version option (#123).
+* Added a convenience function for module loading (#119).
+* Added a possibility to the `argbash` tool to generate the script in-place, exposed as the `-i` option.
+
+
 2.8.1 (2019-06-30)
 ------------------
 

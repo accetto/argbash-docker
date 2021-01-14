@@ -69,6 +69,7 @@ m4_define([_IF_HAVE_DOUBLEDASH], [m4_if(
 	m4_quote(HAVE_DOUBLEDASH), 1, [_IF_HAVE_POSITIONAL_ARGS([$1], [$2])],
 	[$2])])
 
+
 dnl
 dnl In your script, include just this directive (and DEFINE_SCRIPT_DIR before) to include the parsing stuff from a standalone file.
 dnl The argbash script generator will pick it up and (re)generate that one as well
@@ -77,10 +78,30 @@ dnl $1: the filename (assuming that it is in the same directory as the script)
 dnl $2: what has been passed to DEFINE_SCRIPT_DIR as the first param
 argbash_api([INCLUDE_PARSING_CODE], _CHECK_PASSED_ARGS_COUNT(1, 2)[m4_do(
 	[[$0($@)]],
-	[m4_ifndef([SCRIPT_DIR_DEFINED], [m4_fatal([You have to use 'DEFINE_SCRIPT_DIR' before '$0'.])])],
+	[m4_ifndef([SCRIPT_DIR_DEFINED], [m4_fatal([You have to define a script directory by some means before using '$0'])])],
 	[m4_list_append([_OTHER],
-		m4_expand([[. "$]m4_default_quoted([$2], _DEFAULT_SCRIPTDIR)[/$1]"  [# '.' means 'source'
+		m4_expand([[. "$]m4_default_quoted([$2], _SCRIPT_DIR_NAME)[/$1]"  [# '.' means 'source'
 ]]))],
+)])
+
+
+dnl
+dnl $1: Name of the function to define
+argbash_api([DEFINE_LOAD_LIBRARY], [m4_do(
+	[[$0($@)]],
+	[m4_ifndef([SCRIPT_DIR_DEFINED], [m4_fatal([You have to define a script directory by some means before using '$0'])])],
+	[m4_define([WANT_LOAD_LIBRARY])],
+	[m4_list_append([_OTHER],
+		m4_expand([MAKE_FUNCTION(
+			[[Load a shell file as a module],
+				[Args:],
+				_INDENT_()[@S|@1: Path to the file relative to the scripts directory]],
+			m4_default_quoted([$1], [load_lib_relativepath]),
+			[_JOIN_INDENTED(1,
+				[[. $lib_filename || die "Not able to load library file '$lib_filename'"]],
+			)],
+			m4_quote([lib_filename="$]_SCRIPT_DIR_NAME/@S|@1"),
+		)]))],
 )])
 
 
@@ -113,12 +134,10 @@ dnl
 dnl $1: Name of the holding variable
 dnl $2: Command to find the script dir
 m4_define([_DEFINE_SCRIPT_DIR], [m4_do(
-	[[$0($@)]],
 	[m4_define([SCRIPT_DIR_DEFINED])],
-	[m4_pushdef([_sciptdir], m4_ifnblank([$1], [[$1]], _DEFAULT_SCRIPTDIR))],
+	[m4_define([_SCRIPT_DIR_NAME], m4_ifnblank([$1], [[$1]], _DEFAULT_SCRIPTDIR))],
 	[m4_list_append([_OTHER],
-		m4_quote(_sciptdir[="$($2)" || die "Couldn't determine the script's running directory, which probably matters, bailing out" 2]))],
-	[m4_popdef([_sciptdir])],
+		m4_quote(_SCRIPT_DIR_NAME[="$($2)" || ]_INLINE_DIE_BLOCK([Couldn't determine the script's running directory, which probably matters, bailing out], 2)))],
 )])
 
 
@@ -352,7 +371,7 @@ m4_define([_MAKE_ENV_HELP_MESSAGE], [m4_do(
 dnl
 dnl $1: The name of list for help messages
 m4_define([_MAKE_ENV_HELP_MESSAGES], [m4_do(
-	[m4_lists_foreach([ENV_NAMES,ENV_DEFAULTS,ENV_HELPS], [_name,_default,_help], 
+	[m4_lists_foreach([ENV_NAMES,ENV_DEFAULTS,ENV_HELPS], [_name,_default,_help],
 		[_MAKE_ENV_HELP_MESSAGE([$1], _name, _default, _help)])],
 )])
 
@@ -411,6 +430,7 @@ m4_define([_MAKE_HELP], [MAKE_FUNCTION(
 		[_MAKE_ARGS_STACKING_HELP_PRINT_IF_NEEDED],
 		[m4_ifnblank(m4_quote(_HELP_MSG_EX),
 			m4_dquote(_INDENT_()[printf] '\n%s\n' "SUBSTITUTE_LF_FOR_NEWLINE_WITH_INDENT_AND_ESCAPE_DOUBLEQUOTES(_HELP_MSG_EX, [])"_ENDL_()))],
+		[_HELP_PROGS],
 	)],
 )])
 
@@ -689,13 +709,20 @@ m4_define([_MAKE_OPTARG_SIMPLE_CASE_SECTION_IF_IT_MAKES_SENSE],
 			[_IF_ARG_ACCEPTS_VALUE([$3], , [_PICK_SIMPLE_CASE_STATEMENT_COMMENT($@)_MAKE_OPTARG_SIMPLE_CASE_SECTION($@)])])])])
 
 
+dnl
+dnl $1: Value to escape
+dnl Characters s.a. ? (the only one implemented) have special meaning in case statements,
+dnl so they need to be backslash-escaped.
+m4_define([_CASE_ESCAPE], [m4_bpatsubsts([[$1]], [\?], [\\?])])
+
+
 dnl TODO: We have to restrict case match for long options only if those long opts accept value.
 dnl We always match for --help - even if delim is = only.
 dnl And we also match for --no-that
 dnl And for -h*, since this is an action and argbash then ends (but maybe not, what if one has passed -hx, while -x is invalid?)
 m4_define([_MAKE_OPTARG_SIMPLE_CASE_SECTION], [m4_do(
 	[_INDENT_AND_END_CASE_MATCH(
-		[m4_ifblank([$2], [], [[-$2]])],
+		[m4_ifblank([$2], [], m4_dquote(_CASE_ESCAPE([-$2])))],
 		[_IF_ARG_IS_BOOLEAN([$3], [[--no-$1]])],
 		[_IF_ARG_ACCEPTS_VALUE([$3], [_IF_SPACE_IS_A_DELIMITER([[--$1]])], [[--$1]])])],
 	[m4_case([$3],
@@ -787,7 +814,7 @@ m4_define([_MAKE_OPTARG_LONGOPT_EQUALS_CASE_SECTION], [m4_do(
 
 m4_define([_MAKE_OPTARG_GETOPT_CASE_SECTION], [m4_do(
 	[_INDENT_AND_END_CASE_MATCH(
-		[[-$2*]])],
+		m4_dquote(-[]_CASE_ESCAPE([$2])*))],
 	[dnl Search for occurences of e.g. -ujohn and make sure that either -u accepts a value, or -j is a short option
 ],
 	[m4_case([$3],
