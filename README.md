@@ -2,28 +2,29 @@
 
 ## Remarks from [accetto][accetto-github]
 
-The original [argbash][matejak-github-argbash] repository has been cloned because the original Docker image [argbash][matejak-dockerhub-argbash] on the Docker Hub is currently out of date and it does not contain the latest fixes and improvements.
+Some time ago I've cloned the original [argbash][matejak-github-argbash] repository, because the original image available on the Docker Hub has been outdated.
 
-I've made some adjustments in the [Dockerfile][this-github-dockerfile] to make it ready for auto-build and I've built a fresh Docker image [accetto/argbash-docker][this-dockerhub] with the latest enhancements.
+I've made some adjustments in the [Dockerfile][this-github-dockerfile] to make it ready for auto-building on Docker Hub. I've also added some helper [utilities][this-github-utils] that make using the dockerized **argbash** more convenient. They are pretty straightforward and the embedded help should be sufficient. I may add some documentation for the utilities sometimes later.
 
-I've also added some helper [utilities][this-github-utils] that make using dockerized **argbash** more convenient. They are pretty straightforward and the help they provide should be sufficient. I may add some documentation for the utilities sometimes later.
+From time to time I'll merge the new updates from the original [argbash][matejak-github-argbash] repository.
+
+The original **README** for the Docker image can be found [here][matejak-github-argbash-docker-readme].
 
 Enjoy using **argbash**, it's a nice tool. The credit goes to the original author(s).
 
-The original **README** for the Docker image can be found [here][this-github-dockerfile-readme].
-
-Content of the original **README** follows.
+The original **README** content follows.
 
 [accetto-github]: https://github.com/accetto
 
 [this-dockerhub]: https://hub.docker.com/r/accetto/argbash-docker
 [this-github]: https://github.com/accetto/argbash-docker
 
-[this-github-dockerfile]: https://github.com/accetto/argbash-docker/blob/master/docker/Dockerfile.in
+[this-github-dockerfile]: https://github.com/accetto/argbash-docker/blob/master/docker/Dockerfile
 [this-github-dockerfile-readme]: https://github.com/accetto/argbash-docker/tree/master/docker
 [this-github-utils]: https://github.com/accetto/argbash-docker/tree/master/utils
 
 [matejak-github-argbash]: https://github.com/matejak/argbash
+[matejak-github-argbash-docker-readme]: https://github.com/matejak/argbash/blob/master/docker/README.md
 [matejak-dockerhub-argbash]: https://hub.docker.com/r/matejak/argbash/
 
 ****
@@ -93,7 +94,6 @@ Following outputs are available:
 The utility has been inspired by Python's `argparse` and the `shflags` project.
 
 **[Read the docs (latest stable version)](http://argbash.readthedocs.org/en/stable/) for more info**
-
 
 Requirements
 ------------
