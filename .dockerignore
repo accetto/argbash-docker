@@ -9,5 +9,7 @@
 *.md
 *.sh
 *.yml
+
 developer*
 scrap*
+.vscode
