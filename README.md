@@ -4,7 +4,7 @@
 
 Some time ago I've cloned the original [argbash][matejak-github-argbash] repository, because the original image available on the Docker Hub has been outdated at that time.
 
-Later I've added some helper [utilities][this-github-utils] that make using the dockerized **argbash** more convenient. They are pretty straightforward and the embedded help should be sufficient. I may add some documentation for the utilities sometimes later.
+Later I've added some helper [utilities][this-github-utils] that make using the dockerized **argbash** more convenient for me. They are pretty straightforward and the embedded help should be sufficient. I may add some documentation for the utilities sometimes later.
 
 From time to time I'll merge the new updates from the original [argbash][matejak-github-argbash] repository.
 
