@@ -1,7 +1,7 @@
 #!/bin/bash
 ### @accetto (https://github.com/accetto) (https://hub.docker.com/u/accetto/)
 
-# ARG_VERSION([echo v21.01.18])
+# ARG_VERSION([echo v21.01.19])
 # ARG_HELP([Generates 'argbash' compatible script from provided 'argbash' compatible template using dockerized 'argbash'.],[
 << ---
 Attention! The input template file name must come before the other 'argbash' options!
@@ -125,11 +125,11 @@ parse_commandline()
     fi
     case "$_key" in
       -v|--version)
-        echo v21.01.18
+        echo v21.01.19
         exit 0
         ;;
       -v*)
-        echo v21.01.18
+        echo v21.01.19
         exit 0
         ;;
       -h|--help)
@@ -305,7 +305,7 @@ main() {
   if [ "${_arg_echo}" == "off" ] ; then
 
     ### let the container to process the template
-    docker run -it --rm -e PROGRAM=argbash -v "${workdir}":/work "${image}" "${_arg_template}" -o "${output_file}" "${_arg_parameters[@]}"
+    docker run -it --rm -e PROGRAM=argbash -u $(id -u):$(id -g) -v "${workdir}":/work "${image}" "${_arg_template}" -o "${output_file}" "${_arg_parameters[@]}"
 
     if [ "$?" == "0" ] ; then
       echo "SUCCESS: Template file '${_arg_template}' has been sucessfully processed into the working directory."
@@ -314,7 +314,7 @@ main() {
     fi
 
   else
-    echo "docker run -it --rm -e PROGRAM=argbash -v" "${workdir}":/work "${image}" "${_arg_template}" -o "${output_file}" "${_arg_parameters[@]}"
+    echo "docker run -it --rm -e PROGRAM=argbash -u $(id -u):$(id -g) -v" "${workdir}":/work "${image}" "${_arg_template}" -o "${output_file}" "${_arg_parameters[@]}"
   fi
 }
 
