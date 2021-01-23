@@ -1,7 +1,7 @@
 #!/bin/bash
 ### @accetto (https://github.com/accetto) (https://hub.docker.com/u/accetto/)
 
-# ARG_VERSION([echo v21.01.19])
+# ARG_VERSION([echo v21.01.22])
 # ARG_HELP([Generates 'argbash' compatible template from provided argument definitions using dockerized 'argbash'.],[
 << ---
 Attention! The output file name must come before the argument definitions and/or other options for 'argbash-init'!
@@ -116,11 +116,11 @@ parse_commandline()
     fi
     case "$_key" in
       -v|--version)
-        echo v21.01.19
+        echo v21.01.22
         exit 0
         ;;
       -v*)
-        echo v21.01.19
+        echo v21.01.22
         exit 0
         ;;
       -h|--help)
@@ -272,7 +272,9 @@ main() {
   if [ "$_arg_echo" == "off" ] ; then
 
     ### let the container to generate the template
-    docker run -it --rm -e PROGRAM=argbash-init -u $(id -u):$(id -g) -v "${workdir}":/work "${image}" "${_arg_output_file}" "${_arg_parameters[@]}"
+    ### Remark: Do not use the option '-u'. On Windows it has caused the following error message by 'argbash':
+    ### "chmod: utility-argbash-init-copy.sh: Operation not permitted". It began suddenly, seemingly without any reason.
+    docker run -it --rm -e PROGRAM=argbash-init -v "${workdir}":/work "${image}" "${_arg_parameters[@]}" "${_arg_output_file}"
 
     if [ "$?" == "0" ] ; then
       echo "SUCCESS: Template '${_arg_output_file}' generated into the working directory."
@@ -281,7 +283,7 @@ main() {
     fi
 
   else
-    echo "docker run -it --rm -e PROGRAM=argbash-init -u $(id -u):$(id -g) -v" "${workdir}":/work "${image}" "${_arg_output_file}" "${_arg_parameters[@]}"
+    echo "docker run -it --rm -e PROGRAM=argbash-init -v" "${workdir}":/work "${image}" "${_arg_parameters[@]}" "${_arg_output_file}"
   fi
 }
 

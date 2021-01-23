@@ -1,7 +1,7 @@
 #!/bin/bash
 ### @accetto (https://github.com/accetto) (https://hub.docker.com/u/accetto/)
 
-# ARG_VERSION([echo v21.01.19])
+# ARG_VERSION([echo v21.01.22])
 # ARG_HELP([Generates 'argbash' compatible script from provided 'argbash' compatible template using dockerized 'argbash'.],[
 << ---
 Attention! The input template file name must come before the other 'argbash' options!
@@ -12,12 +12,12 @@ The input template can be one of the following:
 
 The input template file is overwritten by default, except when:
   - it is a '*.m4' file
-  - an another output file is explicitelly defined ('-o/--output')
+  - an another output file is explicitly defined ('-o/--output')
 
 The essential local variables ('image', 'workdir') are initialized in the following order:
   - from the command line arguments ('-m/--image', '-w/--workdir')
   - from the environment variables (ARGBASH_IMAGE, ARGBASH_WORKDIR)
-  - from the local variables ('essential_default_image', 'essential_default_workdir')
+  - from the local variables ('_essential_default_image', '_essential_default_workdir')
 
 The created container will be automatically removed after generating the output file.
 Note that the container must have writing permissions for the working directory.
@@ -93,12 +93,12 @@ The input template can be one of the following:
 
 The input template file is overwritten by default, except when:
   - it is a '*.m4' file
-  - an another output file is explicitelly defined ('-o/--output')
+  - an another output file is explicitly defined ('-o/--output')
 
 The essential local variables ('image', 'workdir') are initialized in the following order:
   - from the command line arguments ('-m/--image', '-w/--workdir')
   - from the environment variables (ARGBASH_IMAGE, ARGBASH_WORKDIR)
-  - from the local variables ('essential_default_image', 'essential_default_workdir')
+  - from the local variables ('_essential_default_image', '_essential_default_workdir')
 
 The created container will be automatically removed after generating the output file.
 Note that the container must have writing permissions for the working directory.
@@ -125,11 +125,11 @@ parse_commandline()
     fi
     case "$_key" in
       -v|--version)
-        echo v21.01.19
+        echo v21.01.22
         exit 0
         ;;
       -v*)
-        echo v21.01.19
+        echo v21.01.22
         exit 0
         ;;
       -h|--help)
@@ -305,7 +305,9 @@ main() {
   if [ "${_arg_echo}" == "off" ] ; then
 
     ### let the container to process the template
-    docker run -it --rm -e PROGRAM=argbash -u $(id -u):$(id -g) -v "${workdir}":/work "${image}" "${_arg_template}" -o "${output_file}" "${_arg_parameters[@]}"
+    ### Remark: Do not use the option '-u'. On Windows it has caused the following error message:
+    ### "chmod: utility-argbash-init-copy.sh: Operation not permitted". It began suddenly, seemingly without any reason.
+    docker run -it --rm -e PROGRAM=argbash -v "${workdir}":/work "${image}" -o "${output_file}" "${_arg_parameters[@]}" "${_arg_template}"
 
     if [ "$?" == "0" ] ; then
       echo "SUCCESS: Template file '${_arg_template}' has been sucessfully processed into the working directory."
@@ -314,7 +316,7 @@ main() {
     fi
 
   else
-    echo "docker run -it --rm -e PROGRAM=argbash -u $(id -u):$(id -g) -v" "${workdir}":/work "${image}" "${_arg_template}" -o "${output_file}" "${_arg_parameters[@]}"
+    echo "docker run -it --rm -e PROGRAM=argbash -v" "${workdir}":/work "${image}" -o "${output_file}" "${_arg_parameters[@]}" "${_arg_template}"
   fi
 }
 
