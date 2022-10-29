@@ -10,6 +10,12 @@ From time to time I'll merge the new updates from the [original argbash reposito
 
 The original **README** for the Docker image can be found [here][matejak-github-argbash-docker-readme].
 
+You can build the `argbash` container from the project's root directory like this:
+
+```shell
+docker build -f ./docker/Dockerfile -t accetto/argbash-docker .
+```
+
 Enjoy using **argbash**, it's a nice tool. The credit goes to the original author(s).
 
 The original **README** content follows.
