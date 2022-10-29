@@ -4,7 +4,13 @@
 
 The original [argbash][matejak-github-argbash] repository has been cloned because the original Docker image [argbash][matejak-dockerhub-argbash] on the Docker Hub is currently out of date and it does not contain the latest fixes and improvements.
 
-I've made some adjustments in the [Dockerfile][this-github-dockerfile] to make it ready for auto-build and I've built a fresh Docker image [accetto/argbash-docker][this-dockerhub] with the latest enhancements.
+You can build the `argbash-docker` image from the project's root directory like this:
+
+```shell
+docker build -f ./docker/Dockerfile -t accetto/argbash-docker .
+```
+
+You can also download the image from the Docker Hub repository [accetto/argbash-docker][this-dockerhub].
 
 I've also added some helper [utilities][this-github-utils] that make using dockerized **argbash** more convenient. They are pretty straightforward and the help they provide should be sufficient. I may add some documentation for the utilities sometimes later.
 
